@@ -4,13 +4,7 @@ import random
 import math
 from typing import List, Tuple
 
-# task 2.1
-
-"""1. Randomly generate 100 numbers between 0 and 1 and save them to an
-array ’x’. These are your input values.
-2. Create an array ’t’. For each entry x[i] in x, calculate x[i]**3-x[i]**2
-and save the results to t[i]. These are your targets."""
-
+# builds the dataset according to the paper
 def build_dataset() -> Tuple[np.array]:
     # 1.
     x = np.array([random.uniform(0,1) for idx in range(100)])
@@ -19,14 +13,15 @@ def build_dataset() -> Tuple[np.array]:
     t = np.array([a**3 - a**2 + 1 for a in x])
 
     # optional
-    plt.scatter(x, t, 10)
-    plt.xlabel("inputs")
-    plt.ylabel("targets")
+    #plt.scatter(x, t, 10)
+    #plt.xlabel("inputs")
+    #plt.ylabel("targets")
     #plt.show()
 
     return x, t
 
-
+# activation functions
+# just the sigmoids are used, since only then the avg will approach 0
 def ReLu(x : float) -> float:
     if x > 0:
         return x
@@ -39,26 +34,16 @@ def ReLu_derived(x : float) -> float:
     else:
         return 0
 
+def sigmoid(x : float) -> float:
+    return 1 / (1 + math.e**(-x))
+
+def sigmoid_derived(x : float) -> float:
+    return sigmoid(x) * (1 - sigmoid(x))
 
 
+# Layer class which represents one layer of the neural network
 class Layer:
     
-
-    """• The constructor should accept an integer argument n_units, indi-
-    cating the number of units in the layer.
-    • The constructor should accept an integer argument ’input_units’,
-    indicating the number of units in the preceding layer.
-    • The constructor should instantiate a bias vector and a weight matrix
-    of shape (n inputs, n units). Use random values for the weights and 
-
-    -> nicht (units, inputs?) es sollte ja bei Matrix*Inputvals ein Vektor rauskommen mit Größe der n_unit
-    -> Größe von Vektor = Anzahl der Zeilen in der Matrix = n_unit
-    -> mach ich einfach mal so erstmal
-
-    zeros for the biases.
-    • instantiate empty attributes for layer-input, layer preactivation and
-    layer activation
-    """
     def __init__(self, input_units : int, n_units : int) -> None:
         self.input_units = input_units
         self.n_units = n_units
@@ -69,64 +54,56 @@ class Layer:
         self.layer_activation = None
 
 
-    """
-    2. A method called ’forward_step’, which returns each unit’s activation
-    (i.e. output) using ReLu as the activation function.
-    """ 
+    # performs forward step, returns output
     def forward_step(self, layer_input : np.array) -> np.array:
         self.layer_input = layer_input
-        print("\n\nmatrix: \n", self.weight_matrix, "\nlayer_input: \n",self.layer_input)
+        #print("\n\nmatrix: \n", self.weight_matrix, "\nlayer_input: \n",self.layer_input)
 
         output = np.matmul(self.weight_matrix, self.layer_input)
         output = np.squeeze(np.asarray(output))
-        self.layer_preactivation = output - self.bias
+        self.layer_preactivation = output + self.bias
 
-        ReLu_np = np.vectorize(ReLu)
-        output = ReLu_np(output)
+        Sigmoid_np = np.vectorize(sigmoid_derived)
+        output = Sigmoid_np(output)
         self.layer_activation = output
-        print("output: ", output, "\n\n")
 
         return output
 
-    # does nothing, because formulas??
+    # perform a backwards step
     def backward_step(self, target : float, dL_dactivation : np.array = None, output_layer : bool = False) -> None:
+        
+        # if the current layer is the output layer, then dL_dactivation is determined directly by the loss function
         if output_layer:
-            #print("self.layer_activation: ", self.layer_activation)
-            #print("np.array([target for idx in self.input_units]): ", np.array([target for idx in range(self.n_units)]))
-            a_t = self.layer_activation - np.array([target for idx in range(self.n_units)])
-            #print("a_t", a_t, "\n")
-        else:
-            # compute dL_dactivation ?
-            pass
+            dL_dactivation = self.layer_activation - np.array([target for idx in range(self.n_units)])
 
-        relu_derived_np = np.vectorize(ReLu_derived)
-        relu = relu_derived_np(self.layer_preactivation)
-        #print("relu",relu, "\n")
-        vec_mat_mult = np.multiply(self.layer_input, self.weight_matrix)
-        #print("matrix", self.weight_matrix)
-        #print("self.")
-        #print("vec_mat_mult", vec_mat_mult, "\n")
-        dL_dW = np.matmul(np.multiply(a_t, relu), self.weight_matrix)
-        #print("dldw", dL_dW)
+        # WEIGHTS!!!
+        # Formulas used are derived from the courseware, since we dont really understand everything on the paper
+        # maybe they are the same, probably not
+        sigmoid_derived_np = np.vectorize(sigmoid_derived)
+        sigmoid = sigmoid_derived_np(self.layer_preactivation)
+        dd_dW = np.multiply(self.layer_input, self.weight_matrix)
+        dL_dd = np.multiply(dL_dactivation, sigmoid)
+        dL_dW = np.matmul(dL_dd, self.weight_matrix) # dL_dw2 = dL/da_n * da_n/dd_n * dd_n/dw_2
 
-        # formulas ?
-        # where do i get dL/dactivation from the l+1 layer?
-        # what is dL/dInputl good for?
 
-        # ....
+        # BIASES!!!
+        dL_dBl = dL_dd # used formula of homework paper this time 
 
-        # bias missing
-
-        # update
-        learn_rate = 0.05
-        subtract = np.multiply(self.weight_matrix * learn_rate, dL_dW)
-        self.weight_matrix -= subtract
-        print("sub: ", subtract, "\nnew weights", self.weight_matrix)
-
+        # update weights
         learn_rate = 0.05
         subtract = np.multiply(self.weight_matrix * learn_rate, dL_dW)
         self.weight_matrix -= subtract
 
+        # update biases
+        learn_rate = 0.05
+        subtract = np.multiply(self.bias * learn_rate, dL_dBl)
+        subtract = np.squeeze(np.asarray(subtract))
+        self.bias -= subtract
+        #print("\nsub: ", subtract, "\nnew biases", self.bias)
+
+        return dL_dW
+
+# class for representing Multiple Layers
 class MLP:
     def __init__(self, layers : List[Layer]) -> None:
         self.layers = layers
@@ -134,24 +111,39 @@ class MLP:
     # takes an input an puts it through its whole network
     def forward_step(self, input : np.array) -> np.array:
         output = input
-        for idx, layer in enumerate(self.layers):
+        for layer in self.layers:
             output = layer.forward_step(output)
         return output
 
     # start with output layer
-    def backpropagation(self):
-        pass
+    def backpropagation(self, target : float) -> None:
+        for idx in range(len(self.layers)-1, -1, -1):
+            if idx == len(self.layers) - 1:
+                dL_dactivation = self.layers[idx].backward_step(target=target, output_layer=True)
+            else:
+                dL_dactivation = self.layers[idx].backward_step(target=target, dL_dactivation=dL_dactivation)
 
 
+# trains the network for 1000 (10) epochs
+# approaches 0 so fast, can't be correct
+def train(network : MLP, x : np.array, t : np.array, EPOCHS : int = 10) -> None:
+    avg_loss_plot = []
+    epoch_plot = np.array([x for x in range(EPOCHS)])
 
+    # train, save loss
+    for epoch in epoch_plot:
+        total_loss = 0
+        for x_val, t_val in zip(x, t):
+            network.forward_step(np.array([x_val]))
+            network.backpropagation(np.array([t_val]))
+            total_loss += network.layers[-1].layer_activation
+        avg_loss_plot.append(total_loss / x.size)
 
+    plt.plot(epoch_plot, avg_loss_plot)
+    plt.show()
 
+# build dataset, build network, train network
 x, t = build_dataset()
-
-lay = Layer(10, 1)
-lay.forward_step(np.array([1,2,3,4,5,6,7,8,9,10]))
-lay.backward_step(target=3, output_layer=True)
-
-layer_list = [Layer(2,4), Layer(4,3), Layer(3,2)]
+layer_list = [Layer(1,10), Layer(10,1)]
 network = MLP(layer_list)
-network.forward_step(np.array([3, 4]))
+train(network, x, t)
