@@ -11,6 +11,9 @@ def build_dataset() -> Tuple[np.array]:
 
     # 2.
     t = np.array([a**3 - a**2 + 1 for a in x])
+    #t = np.array([a**3 for a in x])
+    #t = np.array([math.sin(1 / a) for a in x])
+    #t = np.array([a**3 / math.sin(1 / a) for a in x])
 
     # optional
     #plt.scatter(x, t, 10)
@@ -21,7 +24,7 @@ def build_dataset() -> Tuple[np.array]:
     return x, t
 
 # activation functions
-# just the sigmoids are used, since only then the avg will approach 0
+# just the sigmoids are used, since it works better but still not really well
 def ReLu(x : float) -> float:
     if x > 0:
         return x
@@ -74,11 +77,11 @@ class Layer:
         
         # if the current layer is the output layer, then dL_dactivation is determined directly by the loss function
         if output_layer:
-            dL_dactivation = self.layer_activation - np.array([target for idx in range(self.n_units)])
+            dL_dactivation = np.array([target for idx in range(self.n_units)]) - self.layer_activation
 
         # WEIGHTS!!!
         # Formulas used are derived from the courseware, since we dont really understand everything on the paper
-        # maybe they are the same, probably not
+        # probably the reason why it doesnt work
         sigmoid_derived_np = np.vectorize(sigmoid_derived)
         sigmoid = sigmoid_derived_np(self.layer_preactivation)
         dd_dW = np.multiply(self.layer_input, self.weight_matrix)
@@ -95,12 +98,13 @@ class Layer:
         self.weight_matrix -= subtract
 
         # update biases
+        # stays at 0 for some reason
         learn_rate = 0.05
         subtract = np.multiply(self.bias * learn_rate, dL_dBl)
         subtract = np.squeeze(np.asarray(subtract))
         self.bias -= subtract
-        #print("\nsub: ", subtract, "\nnew biases", self.bias)
 
+        # dL_dW will be reused
         return dL_dW
 
 # class for representing Multiple Layers
@@ -125,8 +129,7 @@ class MLP:
 
 
 # trains the network for 1000 (10) epochs
-# approaches 0 so fast, can't be correct
-def train(network : MLP, x : np.array, t : np.array, EPOCHS : int = 10) -> None:
+def train(network : MLP, x : np.array, t : np.array, EPOCHS : int = 1000) -> None:
     avg_loss_plot = []
     epoch_plot = np.array([x for x in range(EPOCHS)])
 
@@ -136,9 +139,11 @@ def train(network : MLP, x : np.array, t : np.array, EPOCHS : int = 10) -> None:
         for x_val, t_val in zip(x, t):
             network.forward_step(np.array([x_val]))
             network.backpropagation(np.array([t_val]))
-            total_loss += network.layers[-1].layer_activation
+            total_loss += 1/2 * (network.layers[-1].layer_activation - t_val)**2
         avg_loss_plot.append(total_loss / x.size)
 
+    print("avg loss beginning: ", avg_loss_plot[0])
+    print("avg loss end: ", avg_loss_plot[-1])
     plt.plot(epoch_plot, avg_loss_plot)
     plt.show()
 
