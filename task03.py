@@ -21,7 +21,7 @@ class MLP:
 
     # Returns loss
     def backpropagation(self, result: np.array, target: np.array) -> np.array:
-        intermediate_loss = result - target  # np.ones((1, 1)) * (result - target)  # TODO optimize  #Old: (2 / np.shape(result)[0]) * (-expected + result)
+        intermediate_loss = result - target
         for layer in reversed(self._layers):
             layer_loss = layer.backward_step(intermediate_loss, self._learning_rate)
             intermediate_loss = layer_loss

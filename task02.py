@@ -29,4 +29,4 @@ class Layer:
         return bias_gradient @ self._weights.transpose()
 
     def activation_func_derived(self, param: float):
-        return 1 if param > 0 else 0  # TODO or >=?
+        return 1 if param > 0 else 0
