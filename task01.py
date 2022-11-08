@@ -8,7 +8,7 @@ def plotFunction():
     yValues = xValues ** 3 - xValues ** 2
 
     # Bonus: Plot data points
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.plot(range(0, 100), xValues, label="data point input")
     ax.plot(range(0, 100), yValues, label="data point target")
 
