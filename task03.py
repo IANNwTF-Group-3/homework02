@@ -24,5 +24,5 @@ class MLP:
         intermediate_loss = result - target  # np.ones((1, 1)) * (result - target)  # TODO optimize  #Old: (2 / np.shape(result)[0]) * (-expected + result)
         for layer in reversed(self._layers):
             layer_loss = layer.backward_step(intermediate_loss, self._learning_rate)
-            intermediate_loss = intermediate_loss * layer_loss
+            intermediate_loss = layer_loss
         return 0.5 * (result - target) ** 2
