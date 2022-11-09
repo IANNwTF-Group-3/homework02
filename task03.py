@@ -21,17 +21,17 @@ class MLP:
 
     def backpropagation(self, loss: np.array) -> np.array:
         """
-        :param result: Output of the network
-        :param target: Target value
+        :param loss: The gradient of the loss
         :return: Gradient of the loss function with respect to the input of the network
         """
         for layer in reversed(self._layers):
             loss = layer.backward_step(loss, self._learning_rate)
 
-    def train(self, epochs: float, data: List[Tuple[float, float]], verbose: bool = False) -> List[float]:
+    def train(self, epochs: int, data: List[Tuple[float, float]], verbose: bool = False) -> List[float]:
         """
         :param epochs: Number of epochs to train
         :param data: List of tuples (input, target)
+        :param verbose: True if the training should print additional information to the console (default: False)
         :return: List of losses
         """
         avg_losses = []

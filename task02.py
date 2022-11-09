@@ -1,16 +1,22 @@
 import numpy as np
+from numpy import ndarray
+
 
 def sigmoid(x) -> float:
     return 1 / (1 + np.exp(-x))
 
+
 def sigmoid_derivative(x) -> float:
     return sigmoid(x) * (1 - sigmoid(x))
+
 
 def ReLu(x) -> float:
     return np.maximum(0, x)
 
-def ReLu_derivative(x) -> float:
+
+def ReLu_derivative(x) -> ndarray:
     return np.where(x > 0, 1, 0)
+
 
 class Layer:
     def __init__(self, input_units: int, n_units: int):
@@ -47,4 +53,3 @@ class Layer:
         self._weights -= learning_rate * weight_gradient
 
         return bias_gradient @ self._weights.T
-
