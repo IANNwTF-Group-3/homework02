@@ -5,17 +5,15 @@ import task04
 
 
 def plot_results():
-    epochs = 1000
-
-    (mlp, avg_losses) = task04.trainMLP(epochs, verbose=True)
+    (mlp, avg_losses) = task04.train_task04()
 
     plot_range = np.arange(0, 1, 0.001)
 
-    targets = list(map(task04.function_to_learn, plot_range))
+    targets = list(map(task04.x_squared_minus_x_cubed, plot_range))
     mlp_results = list(map(lambda val: mlp.forward_step(np.asarray([val]))[0][0], plot_range))
 
     _, ax = plt.subplots(ncols=2)
-    ax[0].plot(range(epochs), avg_losses)
+    ax[0].plot(range(1000), avg_losses)
     ax[0].set(xlabel='Epochs', ylabel='Average loss',
               title='Average loss per epoch')
     ax[0].grid()

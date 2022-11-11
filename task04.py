@@ -1,23 +1,23 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 import numpy as np
 
 import task02
 import task03
 
 
-def function_to_learn(val):
+def x_squared_minus_x_cubed(val):
     return val ** 2 - val ** 3
 
 
-def trainMLP(epochs: float = 1000, verbose: bool = False) -> Tuple[task03.MLP, List[float]]:
+def generate_data_points(function: Callable[[float], float], data_range: np.ndarray) -> List[Tuple[float, float]]:
+    return list(map(lambda val: (val, function(val)), data_range))
+
+def train_task04():
     layers = [task02.Layer(1, 10), task02.Layer(10, 1)]
-    mlp = task03.MLP(layers, 0.01)
+    training_data = generate_data_points(x_squared_minus_x_cubed, np.random.random(100))
+    mlp = task03.MLP(layers, 0.01, task02.ReLu, task02.ReLu_derivative)
 
-    data_to_target: List[Tuple[float, float]] = list(
-        map(lambda val: (val, function_to_learn(val)), np.random.random(100)))
-
-    return mlp, mlp.train(epochs, data_to_target, verbose=verbose)
-
+    return mlp, mlp.train(1000, training_data, verbose=True)
 
 if __name__ == '__main__':
-    trainMLP()
+    train_task04()

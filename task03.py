@@ -1,13 +1,19 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 
 import numpy as np
+
 import task02
 
 
 class MLP:
-    def __init__(self, layers: List[task02.Layer], learning_rate: float):
+    def __init__(self, layers: List[task02.Layer],
+                 learning_rate: float,
+                 activation_function: Callable[[float], np.ndarray],
+                 derived_activation_function: Callable[[float], np.ndarray]):
         self._layers = layers
         self._learning_rate = learning_rate
+        self._activation_function = activation_function
+        self._derived_activation_function = derived_activation_function
 
     def forward_step(self, input_data: np.array) -> np.array:
         """
@@ -16,7 +22,7 @@ class MLP:
         """
         result = input_data
         for layer in self._layers:
-            result = layer.forward_step(result)
+            result = layer.forward_step(result, self._activation_function)
         return result
 
     def backpropagation(self, loss: np.array) -> np.array:
@@ -25,7 +31,7 @@ class MLP:
         :return: Gradient of the loss function with respect to the input of the network
         """
         for layer in reversed(self._layers):
-            loss = layer.backward_step(loss, self._learning_rate)
+            loss = layer.backward_step(loss, self._learning_rate, self._derived_activation_function)
 
     def train(self, epochs: int, data: List[Tuple[float, float]], verbose: bool = False) -> List[float]:
         """
@@ -52,4 +58,3 @@ class MLP:
             avg_losses.append(avg_loss / len(data))
 
         return avg_losses
-
