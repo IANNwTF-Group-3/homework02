@@ -13,7 +13,7 @@ def plot_results():
     mlp_results = list(map(lambda val: mlp.forward_step(np.asarray([val]))[0][0], plot_range))
 
     _, ax = plt.subplots(ncols=2)
-    ax[0].plot(range(1000), avg_losses)
+    ax[0].plot(range(len(avg_losses)), avg_losses)
     ax[0].set(xlabel='Epochs', ylabel='Average loss',
               title='Average loss per epoch')
     ax[0].grid()
