@@ -14,11 +14,11 @@ def sin_of_1_divided_by_x(x: float):
 
 
 def train() -> Tuple[task03.MLP, List[float]]:
+    """
+    Trains an MLP to predict sin(1/x).
+    :return: MLP, List of losses
+    """
     epochs = 5000
-    # layer = [
-    #     task02.Layer(1, 30),
-    #     task02.Layer(30, 1)
-    # ]
     layer = [
         task02.Layer(1, 5),
         task02.Layer(5, 10),
@@ -32,6 +32,13 @@ def train() -> Tuple[task03.MLP, List[float]]:
 
 
 def visualize(mlp: task03.MLP, losses: List[float], min_x: float, max_x: float):
+    """
+    Visualizes the average loss per epoch and the learned function in contrast to the target function.
+    :param mlp: Trained MLP
+    :param losses: List of average losses per epoch
+    :param min_x: Min x value for the plot
+    :param max_x: Max x value for the plot
+    """
     plot_range = np.arange(min_x, max_x, 0.0001)
 
     targets = list(map(sin_of_1_divided_by_x, plot_range))

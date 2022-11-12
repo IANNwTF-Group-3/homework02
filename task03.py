@@ -17,6 +17,7 @@ class MLP:
 
     def forward_step(self, input_data: np.array) -> np.array:
         """
+        Returns the prediction of the network to the provided input.
         :param input_data: Input to the network
         :return: Output of the network
         """
@@ -27,6 +28,8 @@ class MLP:
 
     def backpropagation(self, loss: np.array) -> np.array:
         """
+        Backpropagates through the MLP to update the weights and biases. Returns the loss of the network.
+        This function should be called after a forward_step.
         :param loss: The gradient of the loss
         :return: Gradient of the loss function with respect to the input of the network
         """
@@ -35,6 +38,7 @@ class MLP:
 
     def train(self, epochs: int, data: List[Tuple[float, float]], verbose: bool = False) -> List[float]:
         """
+        Trains the MLP.
         :param epochs: Number of epochs to train
         :param data: List of tuples (input, target)
         :param verbose: True if the training should print additional information to the console (default: False)
